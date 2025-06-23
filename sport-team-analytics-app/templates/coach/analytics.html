@@ -1,0 +1,232 @@
+{% extends 'coach/coach_base.html' %}
+{% block title %}Team Analytics{% endblock %}
+{% block content %}
+<h2>Team Analytics</h2>
+<a href="{{ url_for('coach.analytics_pdf') }}" class="btn btn-outline-primary mb-3" target="_blank">Download PDF</a>
+{% if team_stats %}
+    {% for stat in team_stats %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>{{ stat.team.name }}</h4>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <div class="alert alert-primary text-center">
+                        <div class="fw-bold">Matches Played</div>
+                        <div class="display-6">{{ stat.match_count }} <span class="text-success" style="font-size:1.2rem;">({{ stat.win_count }} <span title="Wins" data-bs-toggle="tooltip">🏆</span>)</span></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="alert alert-success text-center">
+                        <div class="fw-bold">Total Goals</div>
+                        <div class="display-6">{{ stat.total_goals }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="alert alert-info text-center">
+                        <div class="fw-bold">Avg Goals/Match</div>
+                        <div class="display-6">{{ stat.avg_goals }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="alert alert-warning text-center">
+                        <div class="fw-bold">W / D / L</div>
+                        <div class="display-6">{{ stat.win_count }} / {{ stat.draw_count }} / {{ stat.loss_count }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <canvas id="goalsChart{{ loop.index }}" height="100"></canvas>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="text-center mb-2 fw-bold">Win/Draw/Loss</div>
+                    <canvas id="resultPie{{ loop.index }}" height="100"></canvas>
+                    <div class="mt-2 text-center">
+                        <span class="badge bg-success">Wins</span>
+                        <span class="badge bg-warning text-dark">Draws</span>
+                        <span class="badge bg-danger">Losses</span>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <canvas id="cumulativeGoalsLine{{ loop.index }}" height="100"></canvas>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <canvas id="topScorersBar{{ loop.index }}" height="100"></canvas>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <canvas id="goalsVsOpponentsBar{{ loop.index }}" height="100"></canvas>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <canvas id="goalsByMonthBar{{ loop.index }}" height="100"></canvas>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <canvas id="topAssistsBar{{ loop.index }}" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-warning">No teams or matches found for analytics.</div>
+{% endif %}
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% for stat in team_stats %}
+    // Goals per match bar chart
+    var ctx{{ loop.index }} = document.getElementById('goalsChart{{ loop.index }}').getContext('2d');
+    new Chart(ctx{{ loop.index }}, {
+        type: 'bar',
+        data: {
+            labels: {{ stat.match_labels|tojson }},
+            datasets: [{
+                label: 'Goals per Match',
+                data: {{ stat.goals_per_match|tojson }},
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Goals per Match' }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+    // Win/Loss/Draw pie chart
+    var pieCtx{{ loop.index }} = document.getElementById('resultPie{{ loop.index }}').getContext('2d');
+    new Chart(pieCtx{{ loop.index }}, {
+        type: 'pie',
+        data: {
+            labels: ['Wins', 'Draws', 'Losses'],
+            datasets: [{
+                data: [{{ stat.win_count }}, {{ stat.draw_count }}, {{ stat.loss_count }}],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.7)',
+                    'rgba(255, 193, 7, 0.7)',
+                    'rgba(220, 53, 69, 0.7)'
+                ]
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { display: false },
+                title: { display: false }
+            }
+        }
+    });
+    // Cumulative goals line chart
+    // var cumulativeGoals = [];
+    // var sum = 0;
+    // {{ stat.goals_per_match|tojson }}.forEach(function(g) { sum += g; cumulativeGoals.push(sum); });
+    // var cumLineCtx{{ loop.index }} = document.getElementById('cumulativeGoalsLine{{ loop.index }}').getContext('2d');
+    // new Chart(cumLineCtx{{ loop.index }}, {
+    //     type: 'line',
+    //     data: {
+    //         labels: {{ stat.match_labels|tojson }},
+    //         datasets: [{
+    //             label: 'Cumulative Goals',
+    //             data: cumulativeGoals,
+    //             fill: false,
+    //             borderColor: 'rgba(255, 99, 132, 1)',
+    //             tension: 0.1
+    //         }]
+    //     },
+    //     options: {
+    //         plugins: {
+    //             title: { display: true, text: 'Cumulative Goals' }
+    //         },
+    //         scales: {
+    //             y: { beginAtZero: true }
+    //         }
+    //     }
+    // });
+    // Top Scorers Bar Chart
+    var topScorers = {{ stat.top_scorers|tojson }};
+    new Chart(document.getElementById('topScorersBar{{ loop.index }}').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: topScorers.map(x => x.name),
+            datasets: [{
+                label: 'Goals',
+                data: topScorers.map(x => x.goals),
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: { title: { display: true, text: 'Top Scorers' } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+    // Goals vs. Opponents Bar Chart
+    var goalsVsOpponents = {{ stat.goals_vs_opponent|tojson }};
+    new Chart(document.getElementById('goalsVsOpponentsBar{{ loop.index }}').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: goalsVsOpponents.map(x => x.opponent),
+            datasets: [{
+                label: 'Goals',
+                data: goalsVsOpponents.map(x => x.goals),
+                backgroundColor: 'rgba(255, 206, 86, 0.5)',
+                borderColor: 'rgba(255, 206, 86, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: { title: { display: true, text: 'Goals vs. Opponents' } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+    // Goals by Month Bar Chart
+    var goalsByMonth = {{ stat.goals_by_month|tojson }};
+    new Chart(document.getElementById('goalsByMonthBar{{ loop.index }}').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: goalsByMonth.map(x => x.month),
+            datasets: [{
+                label: 'Goals',
+                data: goalsByMonth.map(x => x.goals),
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: { title: { display: true, text: 'Goals by Month' } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+    // Assists Leaderboard Bar Chart
+    var topAssists = {{ stat.top_assists|tojson }};
+    new Chart(document.getElementById('topAssistsBar{{ loop.index }}').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: topAssists.map(x => x.name),
+            datasets: [{
+                label: 'Assists',
+                data: topAssists.map(x => x.assists),
+                backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: { title: { display: true, text: 'Assists Leaderboard' } },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+    {% endfor %}
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,15 @@
+<div class="modal-header">
+    <h5 class="modal-title">Team: {{ team.name }}</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <p><strong>Description:</strong> {{ team.description }}</p>
+    <h6>Players</h6>
+    <ul>
+        {% for player in team.players %}
+        <li>{{ player.user.firstname }} {{ player.user.lastname }} ({{ player.user.username }})</li>
+        {% else %}
+        <li>No players assigned.</li>
+        {% endfor %}
+    </ul>
+</div> 

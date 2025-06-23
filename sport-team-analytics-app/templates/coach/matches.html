@@ -1,0 +1,120 @@
+{% extends 'coach/coach_base.html' %}
+{% block title %}Matches{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Matches</h2>
+    <a href="#" class="btn btn-success" onclick="openMatchModal('{{ url_for('coach.add_match') }}', 'Add Match'); return false;">Add Match</a>
+</div>
+<!-- Calendar View -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+<div id="calendar" class="mb-4"></div>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: 500,
+        events: [
+            {% for match in matches %}
+            {
+                title: '{{ match.team.name|escape }} vs {{ match.opponent|escape }}',
+                start: '{{ match.date }}',
+                description: `Location: {{ match.location|escape }}\nResult: {{ match.result|escape }}\nNotes: {{ match.notes|escape }}`,
+                backgroundColor: '{{ team_colors[match.team_id] }}',
+                borderColor: '{{ team_colors[match.team_id] }}',
+                id: '{{ match.id }}'
+            },
+            {% endfor %}
+        ],
+        eventDidMount: function(info) {
+            if (info.event.extendedProps.description) {
+                info.el.title = info.event.extendedProps.description;
+            }
+        },
+        eventClick: function(info) {
+            // Open edit modal for the match
+            openMatchModal('/coach/matches/edit/' + info.event.id, 'Edit Match');
+        }
+    });
+    calendar.render();
+});
+</script>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="mt-3">
+      {% for message in messages %}
+        <div class="alert alert-info">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Team</th>
+            <th>Date</th>
+            <th>Opponent</th>
+            <th>Location</th>
+            <th>Result</th>
+            <th>Notes</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for match in matches %}
+        <tr>
+            <td>{{ match.team.name }}</td>
+            <td>{{ match.date }}</td>
+            <td>{{ match.opponent }}</td>
+            <td>{{ match.location }}</td>
+            <td>{{ match.result }}</td>
+            <td>{{ match.notes or '-' }}</td>
+            <td>
+                <a href="#" class="btn btn-sm btn-primary" onclick="openMatchModal('{{ url_for('coach.edit_match', match_id=match.id) }}', 'Edit Match'); return false;">Edit</a>
+                <a href="{{ url_for('coach.edit_match_stats', match_id=match.id) }}" class="btn btn-sm btn-info ms-1">Player Stats</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<!-- Match Modal -->
+<div class="modal fade" id="matchModal" tabindex="-1" aria-labelledby="matchModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="matchModalLabel">Match</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="matchModalBody">
+        <!-- Form will be loaded here -->
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+function openMatchModal(url, title) {
+    $('#matchModalLabel').text(title);
+    $('#matchModalBody').html('<div class="text-center py-5"><div class="spinner-border"></div></div>');
+    $('#matchModal').modal('show');
+    $.get(url, function(data) {
+        $('#matchModalBody').html(data);
+    });
+}
+
+$(document).on('submit', '#matchForm', function(e) {
+    e.preventDefault();
+    var $form = $(this);
+    $.post($form.attr('action'), $form.serialize(), function(data) {
+        if (data.success) {
+            $('#matchModal').modal('hide');
+            location.reload();
+        } else {
+            $('#matchModalBody').html(data.html);
+        }
+    });
+});
+</script>
+{% endblock %} 

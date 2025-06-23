@@ -1,0 +1,79 @@
+{% extends 'coach/coach_base.html' %}
+{% block title %}Coach Dashboard{% endblock %}
+{% block content %}
+<h2 class="mb-4">Dashboard</h2>
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Teams</h5>
+                <p class="card-text display-6">{{ teams|length }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Players</h5>
+                <!-- {{ player_count }} -->
+                {% for team in teams %}
+                    {% set player_count = player_count + team.players|length %}
+                {% endfor %}
+                <p class="card-text display-6">{{ player_count }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Upcoming Trainings</h5>
+                {% if upcoming_trainings %}
+                    <ul class="list-unstyled mb-0">
+                        {% for training in upcoming_trainings %}
+                        <li class="mb-2">
+                            <strong>{{ training.date.strftime('%Y-%m-%d') }}</strong> — {{ training.team.name }}<br>
+                            <small class="text-muted">{{ training.notes or '' }}</small>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="card-text display-6">None</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% if teams %}
+    {% for team in teams %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>{{ team.name }}</h4>
+                <small>{{ team.description }}</small>
+            </div>
+            <div class="card-body">
+                <h5>Players</h5>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Firstname</th>
+                            <th>Lastname</th>
+                            <th>Username</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for player in team.players %}
+                        <tr>
+                            <td>{{ player.user.firstname }}</td>
+                            <td>{{ player.user.lastname }}</td>
+                            <td>{{ player.user.username }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-warning mt-4">You are not assigned to any teams.</div>
+{% endif %}
+{% endblock %} 

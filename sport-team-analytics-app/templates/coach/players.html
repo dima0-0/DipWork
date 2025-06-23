@@ -1,0 +1,73 @@
+{% extends 'coach/coach_base.html' %}
+{% block title %}Players{% endblock %}
+{% block content %}
+<h2>Players</h2>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input type="text" name="search" class="form-control" placeholder="Search by name or username" value="{{ request.args.get('search', '') }}">
+    </div>
+    <div class="col-md-3">
+        <select name="team_id" class="form-select">
+            <option value="">All Teams</option>
+            {% for team in teams %}
+            <option value="{{ team.id }}" {% if request.args.get('team_id') == team.id|string %}selected{% endif %}>{{ team.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="position" class="form-select">
+            <option value="">All Positions</option>
+            {% for pos in positions %}
+            <option value="{{ pos }}" {% if selected_position == pos %}selected{% endif %}>{{ pos }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Filter</button>
+    </div>
+</form>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Firstname</th>
+            <th>Lastname</th>
+            <th>Team</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for player in players %}
+        <tr>
+            <td>{{ player.user.firstname }}</td>
+            <td>{{ player.user.lastname }}</td>
+            <td>{{ player.team.name }}</td>
+            <td><a href="#" class="btn btn-sm btn-primary view-player-btn" data-player-id="{{ player.id }}">View</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Player Detail Modal -->
+<div class="modal fade" id="playerDetailModal" tabindex="-1" aria-labelledby="playerDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content" id="playerDetailModalContent">
+      <!-- Content loaded via AJAX -->
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(function() {
+  $('.view-player-btn').on('click', function(e) {
+    e.preventDefault();
+    var playerId = $(this).data('player-id');
+    $('#playerDetailModalContent').html('<div class="modal-body text-center py-5"><div class="spinner-border"></div></div>');
+    $('#playerDetailModal').modal('show');
+    $.get('/coach/players/' + playerId + '/view', function(data) {
+      $('#playerDetailModalContent').html(data);
+    });
+  });
+});
+</script>
+{% endblock %}

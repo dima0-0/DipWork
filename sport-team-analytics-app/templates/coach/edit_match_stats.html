@@ -1,0 +1,118 @@
+{% extends 'coach/coach_base.html' %}
+{% block title %}Edit Player Stats{% endblock %}
+{% block content %}
+<h2>Edit Player Stats for Match: {{ match.team.name }} vs {{ match.opponent }}</h2>
+<table class="table table-bordered" id="player-stats-table">
+    <thead>
+        <tr>
+            <th>Player</th>
+            <th>Goals</th>
+            <th>Assists</th>
+            <th>Minutes Played</th>
+            <th>Notes</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for stat in player_stats %}
+        <tr data-stat-id="{{ stat.id }}">
+            <td>{{ stat.player.user.firstname }} {{ stat.player.user.lastname }}</td>
+            <td class="goals">{{ stat.goals }}</td>
+            <td class="assists">{{ stat.assists }}</td>
+            <td class="minutes">{{ stat.minutes_played }}</td>
+            <td class="notes">{{ stat.notes }}</td>
+            <td><button class="btn btn-sm btn-primary edit-stat-btn" data-stat-id="{{ stat.id }}" data-player="{{ stat.player.user.firstname }} {{ stat.player.user.lastname }}" data-goals="{{ stat.goals }}" data-assists="{{ stat.assists }}" data-minutes="{{ stat.minutes_played }}" data-notes="{{ stat.notes }}">Edit</button></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<a href="{{ url_for('coach.edit_match', match_id=match.id) }}" class="btn btn-secondary ms-2">Back to Match</a>
+
+<!-- Modal -->
+<div class="modal fade" id="editStatModal" tabindex="-1" aria-labelledby="editStatModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="edit-stat-form">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editStatModalLabel">Edit Stats for <span id="modal-player-name"></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="stat_id" id="modal-stat-id">
+          <div class="mb-3">
+            <label for="modal-goals" class="form-label">Goals</label>
+            <input type="number" class="form-control" name="goals" id="modal-goals" min="0">
+          </div>
+          <div class="mb-3">
+            <label for="modal-assists" class="form-label">Assists</label>
+            <input type="number" class="form-control" name="assists" id="modal-assists" min="0">
+          </div>
+          <div class="mb-3">
+            <label for="modal-minutes" class="form-label">Minutes Played</label>
+            <input type="number" class="form-control" name="minutes" id="modal-minutes" min="0">
+          </div>
+          <div class="mb-3">
+            <label for="modal-notes" class="form-label">Notes</label>
+            <input type="text" class="form-control" name="notes" id="modal-notes">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Bootstrap 5 modal
+let editModal = new bootstrap.Modal(document.getElementById('editStatModal'));
+
+// Open modal and fill with data
+$(document).on('click', '.edit-stat-btn', function() {
+    const statId = $(this).data('stat-id');
+    const player = $(this).data('player');
+    const goals = $(this).data('goals');
+    const assists = $(this).data('assists');
+    const minutes = $(this).data('minutes');
+    const notes = $(this).data('notes');
+    $('#modal-stat-id').val(statId);
+    $('#modal-player-name').text(player);
+    $('#modal-goals').val(goals);
+    $('#modal-assists').val(assists);
+    $('#modal-minutes').val(minutes);
+    $('#modal-notes').val(notes);
+    editModal.show();
+});
+
+// AJAX form submit
+$('#edit-stat-form').on('submit', function(e) {
+    e.preventDefault();
+    const statId = $('#modal-stat-id').val();
+    const data = {
+        goals: $('#modal-goals').val(),
+        assists: $('#modal-assists').val(),
+        minutes: $('#modal-minutes').val(),
+        notes: $('#modal-notes').val()
+    };
+    $.ajax({
+        url: window.location.pathname + '/player/' + statId,
+        type: 'POST',
+        data: data,
+        success: function(response) {
+            // Update table row
+            const row = $('tr[data-stat-id="' + statId + '"]');
+            row.find('.goals').text(data.goals);
+            row.find('.assists').text(data.assists);
+            row.find('.minutes').text(data.minutes);
+            row.find('.notes').text(data.notes);
+            editModal.hide();
+        },
+        error: function() {
+            alert('Failed to update stats.');
+        }
+    });
+});
+</script>
+{% endblock %} 

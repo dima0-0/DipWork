@@ -1,0 +1,31 @@
+[project]
+name = "sport-team-analytics-app"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "authorname"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "flask (>=3.1.1,<4.0.0)",
+    "Flask-SQLAlchemy>=3.1",
+    "psycopg2-binary>=2.9",
+    "python-dotenv>=1.0",
+    "flask-login (>=0.6.3,<0.7.0)",
+    "flask-migrate (>=4.1.0,<5.0.0)",
+    "faker (>=37.4.0,<38.0.0)",
+    "sqlalchemy (>=2.0.41,<3.0.0)",
+    "sqlalchemy-schemadisplay (>=2.0,<3.0)",
+    "graphviz (>=0.21,<0.22)",
+    "weasyprint (>=65.1,<66.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry]
+package-mode = false

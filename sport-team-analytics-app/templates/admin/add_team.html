@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Team</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+            <form method="POST" id="teamForm" action="{{ url_for('admin.add_team') }}">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Team Name</label>
+                    <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="coach_id" class="form-label">Coach</label>
+                    <select class="form-select" id="coach_id" name="coach_id" required>
+                        <option value="" disabled selected>Select coach</option>
+                        {% for coach in coaches %}
+                        <option value="{{ coach.id }}">{{ coach.user.firstname }} {{ coach.user.lastname }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success">Add Team</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html> 

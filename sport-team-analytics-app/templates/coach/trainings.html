@@ -1,0 +1,74 @@
+{% extends 'coach/coach_base.html' %}
+{% block title %}Training Sessions{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Training Sessions</h2>
+    <a href="{{ url_for('coach.add_training') }}" class="btn btn-success">Add Training</a>
+</div>
+<!-- Calendar View -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+<div id="calendar" class="mb-4"></div>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: 500,
+        events: [
+            {% for training in trainings %}
+            {
+                title: '{{ training.team.name|escape }}',
+                start: '{{ training.date }}',
+                description: `{{ training.notes|escape }}`,
+                backgroundColor: '{{ team_colors[training.team_id] }}',
+                borderColor: '{{ team_colors[training.team_id] }}',
+                id: '{{ training.id }}'
+            },
+            {% endfor %}
+        ],
+        eventDidMount: function(info) {
+            if (info.event.extendedProps.description) {
+                info.el.title = info.event.extendedProps.description;
+            }
+        },
+        eventClick: function(info) {
+            // Open edit modal for the training
+            window.location.href = '/coach/trainings/edit/' + info.event.id;
+        }
+    });
+    calendar.render();
+});
+</script>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="mt-3">
+      {% for message in messages %}
+        <div class="alert alert-info">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Team</th>
+            <th>Date</th>
+            <th>Notes</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for training in trainings %}
+        <tr>
+            <td>{{ training.team.name }}</td>
+            <td>{{ training.date }}</td>
+            <td>{{ training.notes or '-' }}</td>
+            <td>
+                <a href="{{ url_for('coach.edit_training', training_id=training.id) }}" class="btn btn-sm btn-primary">Edit</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %} 

@@ -1,0 +1,43 @@
+<form method="POST" id="matchForm" action="{{ url_for('coach.edit_match', match_id=match.id) }}">
+    <div class="mb-3">
+        <label for="team_id" class="form-label">Team</label>
+        <select class="form-select" id="team_id" name="team_id" required>
+            {% for team in teams %}
+            <option value="{{ team.id }}" {% if match.team_id == team.id %}selected{% endif %}>{{ team.name }}</option>
+            {% endfor %}
+        </select>
+        <div class="form-text">Select the team for this match.</div>
+    </div>
+    <div class="mb-3">
+        <label for="date" class="form-label">Date</label>
+        <input type="date" class="form-control" id="date" name="date" value="{{ match.date }}" required>
+        <div class="form-text">Enter the date of the match.</div>
+    </div>
+    <div class="mb-3">
+        <label for="opponent" class="form-label">Opponent</label>
+        <input type="text" class="form-control" id="opponent" name="opponent" value="{{ match.opponent }}" required>
+        <div class="form-text">Enter the name of the opposing team.</div>
+    </div>
+    <div class="mb-3">
+        <label for="location" class="form-label">Location</label>
+        <input type="text" class="form-control" id="location" name="location" value="{{ match.location }}">
+        <div class="form-text">Where will the match take place? (Optional)</div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label for="goals_scored" class="form-label">Goals Scored</label>
+            <input type="number" class="form-control" id="goals_scored" name="goals_scored" value="{{ goals_scored }}" min="0">
+        </div>
+        <div class="col-md-6 mb-3">
+            <label for="goals_missed" class="form-label">Goals Missed</label>
+            <input type="number" class="form-control" id="goals_missed" name="goals_missed" value="{{ goals_missed }}" min="0">
+        </div>
+    </div>
+    <div class="form-text mb-3">Enter the number of goals scored and missed. Leave blank if not played yet.</div>
+    <div class="mb-3">
+        <label for="notes" class="form-label">Notes</label>
+        <textarea class="form-control" id="notes" name="notes" rows="2">{{ match.notes }}</textarea>
+        <div class="form-text">Any additional notes about the match. (Optional)</div>
+    </div>
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+</form> 

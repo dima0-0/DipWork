@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Team</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+            <form method="POST" id="teamForm" action="{{ url_for('admin.edit_team', team_id=team.id) }}">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Team Name</label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ team.name }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="2">{{ team.description }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="coach_id" class="form-label">Coach</label>
+                    <select class="form-select" id="coach_id" name="coach_id" required>
+                        <option value="" disabled>Select coach</option>
+                        {% for coach in coaches %}
+                        <option value="{{ coach.id }}" {% if team.coach and team.coach.id == coach.id %}selected{% endif %}>{{ coach.user.firstname }} {{ coach.user.lastname }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html> 

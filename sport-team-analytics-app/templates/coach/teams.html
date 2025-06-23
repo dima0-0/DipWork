@@ -1,0 +1,50 @@
+{% extends 'coach/coach_base.html' %}
+{% block title %}Teams{% endblock %}
+{% block content %}
+<h2>Teams</h2>
+<form method="get" class="mb-3">
+    <input type="text" name="search" class="form-control" placeholder="Search by team name" value="{{ request.args.get('search', '') }}">
+</form>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for team in teams %}
+        <tr>
+            <td>{{ team.name }}</td>
+            <td>{{ team.description }}</td>
+            <td><a href="#" class="btn btn-sm btn-primary view-team-btn" data-team-id="{{ team.id }}">View</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Team Detail Modal -->
+<div class="modal fade" id="teamDetailModal" tabindex="-1" aria-labelledby="teamDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content" id="teamDetailModalContent">
+      <!-- Content loaded via AJAX -->
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(function() {
+  $('.view-team-btn').on('click', function(e) {
+    e.preventDefault();
+    var teamId = $(this).data('team-id');
+    $('#teamDetailModalContent').html('<div class="modal-body text-center py-5"><div class="spinner-border"></div></div>');
+    $('#teamDetailModal').modal('show');
+    $.get('/coach/teams/' + teamId + '/view', function(data) {
+      $('#teamDetailModalContent').html(data);
+    });
+  });
+});
+</script>
+{% endblock %}

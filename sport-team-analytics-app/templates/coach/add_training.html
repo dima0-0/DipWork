@@ -1,0 +1,25 @@
+{% extends 'coach/coach_base.html' %}
+{% block title %}Add Training Session{% endblock %}
+{% block content %}
+<h2>Add Training Session</h2>
+<form method="POST">
+    <div class="mb-3">
+        <label for="team_id" class="form-label">Team</label>
+        <select class="form-select" id="team_id" name="team_id" required>
+            {% for team in teams %}
+            <option value="{{ team.id }}">{{ team.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="date" class="form-label">Date</label>
+        <input type="date" class="form-control" id="date" name="date" required>
+    </div>
+    <div class="mb-3">
+        <label for="notes" class="form-label">Notes</label>
+        <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+    </div>
+    <button type="submit" class="btn btn-success">Add Training</button>
+    <a href="{{ url_for('coach.trainings') }}" class="btn btn-secondary ms-2">Cancel</a>
+</form>
+{% endblock %} 

@@ -1,0 +1,7 @@
+{% extends 'coach/coach_base.html' %}
+{% block title %}Edit Match{% endblock %}
+{% block content %}
+<h2>Edit Match</h2>
+<a href="{{ url_for('coach.edit_match_stats', match_id=match.id) }}" class="btn btn-warning mb-3">Edit Player Stats</a>
+{% include 'coach/edit_match_form.html' with context %}
+{% endblock %} 
